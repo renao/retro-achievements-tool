@@ -1,0 +1,6 @@
+// Fill in your data, remove this line and save file as "ra-settings.json" //
+
+{
+  "username": "your-username",
+  "web-api-key": "your-api-key"
+}
