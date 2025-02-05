@@ -1,5 +1,6 @@
 package de.renao
 
+import de.renao.models.RAGameInfoAndUserProgress
 import de.renao.models.RASettings
 import de.renao.models.RAUserProfile
 import kotlinx.coroutines.runBlocking
@@ -16,8 +17,12 @@ fun main() {
     fetcher = RAFetcher(settings.username, settings.webApiKey)
 
     runBlocking {
-        val renao = loadUserData("renao")
+        val renao = fetcher.fetchUserProfile("renao")
         printUserData(renao)
+
+        val userGameCompletion = fetcher.fetchUserGameProgress("renao", 15935)
+        printUserGameCompletion(userGameCompletion, onlyMissing = false);
+
     }
 }
 
@@ -29,8 +34,25 @@ fun printUserData(userProfile: RAUserProfile) {
     println("*** ${userProfile.totalSoftcorePoints} total softcore points ***")
 }
 
-suspend fun loadUserData(username: String) : RAUserProfile {
-    return fetcher.fetchUserProfile(username)
+fun printUserGameCompletion(gameCompletion: RAGameInfoAndUserProgress, onlyMissing: Boolean = false) {
+    for (achievement in gameCompletion.achievements) {
+        var achievementStatus = "⬜"
+
+        if (!achievement.dateEarned.isNullOrEmpty()) {
+            achievementStatus = "✔️"
+        }
+
+        if (!achievement.dateEarnedHardcore.isNullOrEmpty()) {
+            achievementStatus = "✅"
+        }
+
+        if (achievementStatus != "⬜" && onlyMissing) continue
+
+        println("$achievementStatus ${achievement.title}")
+        println("${achievement.description}")
+        println()
+
+    }
 }
 
 fun loadSettings() : RASettings {

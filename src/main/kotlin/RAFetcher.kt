@@ -1,10 +1,13 @@
 package de.renao
 
 import com.haroldadmin.cnradapter.NetworkResponse
+import de.renao.models.RAGameInfoAndUserProgress
 import de.renao.models.RAUserProfile
 import org.retroachivements.api.RetroClient
 import org.retroachivements.api.RetroInterface
 import org.retroachivements.api.data.RetroCredentials
+import org.retroachivements.api.data.pojo.ErrorResponse
+import org.retroachivements.api.data.pojo.game.GetGameInfoAndUserProgress
 
 class RAFetcher(username: String, apiKey: String) {
 
@@ -23,5 +26,20 @@ class RAFetcher(username: String, apiKey: String) {
         } else {
             throw Exception("Error fetching user profile for '$profileUsername'")
         }
+    }
+
+    suspend fun fetchUserGameProgress(username: String, gameId: Long) : RAGameInfoAndUserProgress {
+        val response = api.getGameInfoAndUserProgress(username, gameId)
+        when (response) {
+            is NetworkResponse.Success<*, *> -> {
+                return RAGameInfoAndUserProgress(response.body as GetGameInfoAndUserProgress.Response)
+            }
+            // is NetworkResponse.ServerError<*, *> -> println(response.error)
+            // is NetworkResponse.NetworkError<*, *> -> TODO()
+            // is NetworkResponse.UnknownError<*, *> -> TODO()
+            else -> println(response);
+        }
+
+        throw Exception("Error fetching user $username progress for Game-ID: '$gameId'")
     }
 }
