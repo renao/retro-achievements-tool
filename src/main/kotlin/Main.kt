@@ -1,8 +1,7 @@
 package de.renao
 
-import de.renao.models.RAGameInfoAndUserProgress
-import de.renao.models.RASettings
-import de.renao.models.RAUserProfile
+import de.renao.models.*
+import de.renao.presenters.AchievementPresenter
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import java.io.InputStream
@@ -10,7 +9,7 @@ import java.io.InputStream
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 
-var fetcher : RAFetcher = RAFetcher("","")
+var fetcher : RAFetcher = RAFetcher("", "")
 
 fun main() {
     val settings = loadSettings()
@@ -36,23 +35,28 @@ fun printUserData(userProfile: RAUserProfile) {
 
 fun printUserGameCompletion(gameCompletion: RAGameInfoAndUserProgress, onlyMissing: Boolean = false) {
     for (achievement in gameCompletion.achievements) {
-        var achievementStatus = "⬜"
+        var achievementState = resolveState(achievement)
+        var renderedState = AchievementPresenter.RenderState(achievementState)
 
-        if (!achievement.dateEarned.isNullOrEmpty()) {
-            achievementStatus = "✔️"
-        }
+        if (achievementState != AchievementState.Unbeaten && onlyMissing) continue
 
-        if (!achievement.dateEarnedHardcore.isNullOrEmpty()) {
-            achievementStatus = "✅"
-        }
-
-        if (achievementStatus != "⬜" && onlyMissing) continue
-
-        println("$achievementStatus ${achievement.title}")
-        println("${achievement.description}")
+        println("$renderedState ${achievement.title}")
+        println(achievement.description)
         println()
-
     }
+}
+
+fun resolveState(achievement: RAUserProgressAchievement) : AchievementState {
+
+    if (!achievement.dateEarnedHardcore.isNullOrEmpty()) {
+        return AchievementState.BeatenInHardcore
+    }
+
+    if (!achievement.dateEarned.isNullOrEmpty()) {
+        return AchievementState.Beaten
+    }
+
+    return AchievementState.Unbeaten
 }
 
 fun loadSettings() : RASettings {
