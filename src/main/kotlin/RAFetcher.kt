@@ -6,7 +6,6 @@ import de.renao.models.RAUserProfile
 import org.retroachivements.api.RetroClient
 import org.retroachivements.api.RetroInterface
 import org.retroachivements.api.data.RetroCredentials
-import org.retroachivements.api.data.pojo.ErrorResponse
 import org.retroachivements.api.data.pojo.game.GetGameInfoAndUserProgress
 
 class RAFetcher(username: String, apiKey: String) {
@@ -21,25 +20,23 @@ class RAFetcher(username: String, apiKey: String) {
     suspend fun fetchUserProfile(profileUsername: String) : RAUserProfile {
         val response = api.getUserProfile(profileUsername)
 
-        if (response is NetworkResponse.Success) {
-            return RAUserProfile(response.body)
-        } else {
-            throw Exception("Error fetching user profile for '$profileUsername'")
+        when (response) {
+            is NetworkResponse.Success
+                -> return RAUserProfile(response.body)
+            else
+                -> throw Exception("Error fetching user profile for '$profileUsername'")
         }
+
     }
 
     suspend fun fetchUserGameProgress(username: String, gameId: Long) : RAGameInfoAndUserProgress {
         val response = api.getGameInfoAndUserProgress(username, gameId)
-        when (response) {
-            is NetworkResponse.Success<*, *> -> {
-                return RAGameInfoAndUserProgress(response.body as GetGameInfoAndUserProgress.Response)
-            }
-            // is NetworkResponse.ServerError<*, *> -> println(response.error)
-            // is NetworkResponse.NetworkError<*, *> -> TODO()
-            // is NetworkResponse.UnknownError<*, *> -> TODO()
-            else -> println(response);
-        }
 
-        throw Exception("Error fetching user $username progress for Game-ID: '$gameId'")
+        when (response) {
+            is NetworkResponse.Success<*, *>
+                -> return RAGameInfoAndUserProgress(response.body as GetGameInfoAndUserProgress.Response)
+            else
+                -> throw Exception("Error fetching user $username progress for Game-ID: '$gameId'")
+        }
     }
 }
