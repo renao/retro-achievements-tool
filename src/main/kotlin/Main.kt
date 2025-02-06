@@ -1,7 +1,8 @@
 package de.renao
 
 import de.renao.models.*
-import de.renao.presenters.AchievementPresenter
+import de.renao.renderers.UserGameCompletionRenderer
+import de.renao.renderers.UserProfileRenderer
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import java.io.InputStream
@@ -17,46 +18,12 @@ fun main() {
 
     runBlocking {
         val renao = fetcher.fetchUserProfile("renao")
-        printUserData(renao)
+        UserProfileRenderer.renderProfile(renao)
 
         val userGameCompletion = fetcher.fetchUserGameProgress("renao", 15935)
-        printUserGameCompletion(userGameCompletion, onlyMissing = false);
+        UserGameCompletionRenderer.renderGameCompletion(userGameCompletion, onlyMissing = false)
 
     }
-}
-
-fun printUserData(userProfile: RAUserProfile) {
-    println("User => ${userProfile.name} (ID: ${userProfile.id})")
-    println("=== since ${userProfile.memberSince} ===")
-    println("*** ${userProfile.totalPoints} total points ***")
-    println("*** ${userProfile.totalTruePoints} total true points ***")
-    println("*** ${userProfile.totalSoftcorePoints} total softcore points ***")
-}
-
-fun printUserGameCompletion(gameCompletion: RAGameInfoAndUserProgress, onlyMissing: Boolean = false) {
-    for (achievement in gameCompletion.achievements) {
-        var achievementState = resolveState(achievement)
-        var renderedState = AchievementPresenter.RenderState(achievementState)
-
-        if (achievementState != AchievementState.Unbeaten && onlyMissing) continue
-
-        println("$renderedState ${achievement.title}")
-        println(achievement.description)
-        println()
-    }
-}
-
-fun resolveState(achievement: RAUserProgressAchievement) : AchievementState {
-
-    if (!achievement.dateEarnedHardcore.isNullOrEmpty()) {
-        return AchievementState.BeatenInHardcore
-    }
-
-    if (!achievement.dateEarned.isNullOrEmpty()) {
-        return AchievementState.Beaten
-    }
-
-    return AchievementState.Unbeaten
 }
 
 fun loadSettings() : RASettings {
