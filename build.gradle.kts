@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "1.9.21"
     kotlin("plugin.serialization") version "1.9.0"
 }
 
@@ -12,8 +12,9 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.RetroAchievements:api-kotlin:1.0.15")
+    implementation("com.github.RetroAchievements:api-kotlin:1.0.16")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
     testImplementation(kotlin("test"))
 }
 
